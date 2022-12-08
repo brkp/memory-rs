@@ -8,15 +8,25 @@ pub use platform::linux::Pid;
 pub use platform::windows::Pid;
 
 pub use process::Process;
+pub use region::MemoryRegion;
 
+#[derive(Debug)]
 pub enum Error {
     ProcessNotFound,
+    ProcessNotRunning,
+    PermissionDenied,
     OsError(std::io::Error),
 }
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Self::OsError(err)
+        use std::io::ErrorKind;
+
+        match err.kind() {
+            ErrorKind::NotFound => Self::ProcessNotFound,
+            ErrorKind::PermissionDenied => Self::PermissionDenied,
+            _ => Self::OsError(err),
+        }
     }
 }
 
