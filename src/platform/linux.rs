@@ -19,7 +19,6 @@ impl Process {
         let mut maps_file = File::open(format!("/proc/{}/maps", self.pid))?;
         let mut maps = String::new();
         maps_file.read_to_string(&mut maps)?;
-        println!("{}", maps);
 
         let mut ret = Vec::new();
 
