@@ -55,12 +55,10 @@ impl Process {
             iov_len: size,
         };
 
-        unsafe {
-            if libc::process_vm_readv(self.pid, &local, 1, &remote, 1, 0) as usize == size {
-                Ok(buffer)
-            } else {
-                Err(crate::Error::OsError(std::io::Error::last_os_error()))
-            }
+        if unsafe { libc::process_vm_readv(self.pid, &local, 1, &remote, 1, 0) } as usize == size {
+            Ok(buffer)
+        } else {
+            Err(crate::Error::OsError(std::io::Error::last_os_error()))
         }
     }
 }
