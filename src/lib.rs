@@ -3,16 +3,11 @@ mod process;
 mod region;
 
 #[cfg(target_os = "linux")]
-mod common {
-    pub use super::platform::linux::Pid;
-}
+pub use platform::linux::Pid;
+#[cfg(target = "windows")]
+pub use platform::windows::Pid;
 
-#[cfg(target_os = "windows")]
-mod common {
-    pub use super::platform::linux::Pid;
-}
-
-pub use common::*;
+pub use process::Process;
 
 pub enum Error {
     ProcessNotFound,
