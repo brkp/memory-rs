@@ -6,6 +6,7 @@ use crate::platform::windows;
 
 use crate::Pid;
 
+#[derive(Debug)]
 pub struct Process {
     pub pid: Pid,
     #[cfg(target_os = "windows")]
