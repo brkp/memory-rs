@@ -1,6 +1,6 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MemoryRegion {
-    pub base: *const u8,
+    pub base: usize,
     pub size: usize,
     pub exec: bool,
     pub read: bool,
@@ -8,7 +8,7 @@ pub struct MemoryRegion {
 }
 
 impl MemoryRegion {
-    pub fn new(base: *const u8, size: usize, exec: bool, read: bool, write: bool) -> Self {
+    pub fn new(base: usize, size: usize, exec: bool, read: bool, write: bool) -> Self {
         Self {
             base,
             size,

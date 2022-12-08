@@ -30,7 +30,7 @@ impl Process {
                     let end = usize::from_str_radix(addr[1], 16).unwrap();
 
                     ret.push(MemoryRegion::new(
-                        start as *const u8,
+                        start,
                         end - start,
                         perms.contains("x"),
                         perms.contains("r"),
@@ -44,7 +44,7 @@ impl Process {
         Ok(ret)
     }
 
-    pub fn read_memory(&self, addr: *const u8, size: usize) -> crate::Result<Vec<u8>> {
+    pub fn read_memory(&self, addr: usize, size: usize) -> crate::Result<Vec<u8>> {
         let mut buffer = vec![0u8; size];
         let local = libc::iovec {
             iov_base: buffer.as_mut_ptr() as *mut _,
