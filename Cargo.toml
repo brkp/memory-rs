@@ -1,0 +1,16 @@
+[package]
+name = "memory-rs"
+version = "0.1.0"
+edition = "2021"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2.138"
+
+[target.'cfg(windows)'.dependencies.windows]
+version = "0.43.0"
+features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_System_Memory",
+    "Win32_System_Diagnostics_Debug",
+]
