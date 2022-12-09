@@ -48,3 +48,9 @@ impl Process {
         }
     }
 }
+
+impl Drop for Process {
+    fn drop(&mut self) {
+        unsafe { CloseHandle(self.handle) };
+    }
+}
