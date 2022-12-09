@@ -1,13 +1,11 @@
 use crate::{MemoryRegion, Process};
-use windows::Win32::{
-    Foundation::{NTSTATUS, STILL_ACTIVE},
-    System::Threading::GetExitCodeProcess,
-};
+
 pub use windows::{
     core::{Error, Result, HRESULT},
     Win32::{
         Foundation::{
             CloseHandle, GetLastError, ERROR_ACCESS_DENIED, ERROR_INVALID_PARAMETER, HANDLE,
+            NTSTATUS, STILL_ACTIVE,
         },
         System::{
             Diagnostics::Debug::ReadProcessMemory,
@@ -15,7 +13,8 @@ pub use windows::{
                 VirtualQueryEx, MEMORY_BASIC_INFORMATION, MEM_COMMIT, MEM_MAPPED, MEM_PRIVATE,
             },
             Threading::{
-                OpenProcess, PROCESS_ACCESS_RIGHTS, PROCESS_QUERY_INFORMATION, PROCESS_VM_READ,
+                GetExitCodeProcess, OpenProcess, PROCESS_ACCESS_RIGHTS, PROCESS_QUERY_INFORMATION,
+                PROCESS_VM_READ,
             },
         },
     },
