@@ -4,7 +4,7 @@ mod region;
 
 #[cfg(target_os = "linux")]
 pub use platform::linux::Pid;
-#[cfg(target = "windows")]
+#[cfg(target_os = "windows")]
 pub use platform::windows::Pid;
 
 pub use process::Process;
@@ -25,7 +25,19 @@ impl From<std::io::Error> for Error {
         match err.kind() {
             ErrorKind::NotFound => Self::ProcessNotFound,
             ErrorKind::PermissionDenied => Self::PermissionDenied,
-            _ => Self::OsError(err),
+            _ => {
+                // we can not match on ErrorKind::Uncategorized
+                // since it's behind "io_error_uncategorized"
+                #[cfg(target_os = "windows")]
+                if let Some(code) = err.raw_os_error() {
+                    use platform::windows::{ERROR_ACCESS_DENIED, HRESULT};
+                    if HRESULT(code) == ERROR_ACCESS_DENIED.to_hresult() {
+                        return Self::PermissionDenied;
+                    }
+                }
+
+                Self::OsError(err)
+            }
         }
     }
 }
