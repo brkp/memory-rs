@@ -11,6 +11,8 @@ pub use windows::{
             Diagnostics::Debug::ReadProcessMemory,
             Memory::{
                 VirtualQueryEx, MEMORY_BASIC_INFORMATION, MEM_COMMIT, MEM_MAPPED, MEM_PRIVATE,
+                PAGE_EXECUTE, PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE, PAGE_EXECUTE_WRITECOPY,
+                PAGE_READONLY, PAGE_READWRITE, PAGE_WRITECOPY,
             },
             Threading::{
                 GetExitCodeProcess, OpenProcess, PROCESS_ACCESS_RIGHTS, PROCESS_QUERY_INFORMATION,
@@ -46,10 +48,63 @@ impl Process {
             }
         }
     }
+
+    pub fn get_memory_regions(&self) -> crate::Result<Vec<MemoryRegion>> {
+        let mut vec = Vec::new();
+        let mut ptr = std::ptr::null_mut();
+        let mut inf = MEMORY_BASIC_INFORMATION::default();
+
+        loop {
+            unsafe {
+                if VirtualQueryEx(
+                    self.handle,
+                    Some(ptr as *const _),
+                    &mut inf,
+                    std::mem::size_of::<MEMORY_BASIC_INFORMATION>(),
+                ) == 0
+                {
+                    break;
+                }
+
+                if inf.State == MEM_COMMIT && ((inf.Type & (MEM_MAPPED | MEM_PRIVATE)).0 != 0) {
+                    vec.push(inf.into());
+                }
+                ptr = inf.BaseAddress.add(inf.RegionSize);
+            }
+        }
+
+        Ok(vec)
+    }
 }
 
 impl Drop for Process {
     fn drop(&mut self) {
         unsafe { CloseHandle(self.handle) };
+    }
+}
+
+impl From<MEMORY_BASIC_INFORMATION> for MemoryRegion {
+    fn from(info: MEMORY_BASIC_INFORMATION) -> Self {
+        Self {
+            base: info.BaseAddress as usize,
+            size: info.RegionSize,
+            exec: (info.Protect
+                & (PAGE_EXECUTE
+                    | PAGE_EXECUTE_READ
+                    | PAGE_EXECUTE_READWRITE
+                    | PAGE_EXECUTE_WRITECOPY))
+                .0
+                != 0,
+            read: (info.Protect
+                & (PAGE_EXECUTE_READ
+                    | PAGE_EXECUTE_READWRITE
+                    | PAGE_EXECUTE_WRITECOPY
+                    | PAGE_READONLY
+                    | PAGE_READWRITE
+                    | PAGE_WRITECOPY))
+                .0
+                != 0,
+            write: (info.Protect & (PAGE_EXECUTE_READWRITE | PAGE_READWRITE)).0 != 0,
+        }
     }
 }
